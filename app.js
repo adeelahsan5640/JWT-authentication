@@ -48,4 +48,26 @@ app.post('/login', jsonParser, function (req, res) {
         //res.json(data)
     })
 })
+app.get('/users', verifyToken, function (req, res) {
+    User.find().then((result) => {
+        res.status(200).json(result)
+    })
+})
+function verifyToken(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+
+    if (typeof bearerHeader !== 'undefined') {
+        const bearer = bearerHeader.split(" ")
+        console.warn(bearer[1])
+        req.token = bearer[1]
+        jwt.verify(req.token, jwtKey, (err, authData) => {
+            if (err) {
+                req.json({ result: err })
+            } else { next(); }
+        })
+    }
+    else {
+        res.send({ "result": "Token not provided" })
+    }
+}
 app.listen(5000)
